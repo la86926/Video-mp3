@@ -3,10 +3,12 @@ name: Video MP3 smoke test
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - test-status.json
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   browser-test:
@@ -50,3 +52,14 @@ jobs:
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
           node /tmp/test.js
+      - name: Save test result
+        if: always()
+        env:
+          TEST_STATUS: ${{ job.status }}
+        run: |
+          printf '{"status":"%s","commit":"%s","run_id":"%s"}\n' "$TEST_STATUS" "$GITHUB_SHA" "$GITHUB_RUN_ID" > test-status.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add test-status.json
+          git commit -m "Registrar resultado prueba Video MP3 [skip ci]" || exit 0
+          git push
