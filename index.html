@@ -1,51 +1,77 @@
 <!doctype html>
-<html lang="es" data-theme="system">
+<html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f5f7">
 <title>Video a MP3</title>
 <style>
-:root{color-scheme:light;--bg:#f5f5f7;--surface:#fff;--surface2:#ebefe8;--text:#161a14;--muted:#737a70;--line:rgba(22,26,20,.1);--brand:#8aa07c;--brand2:#5b7350;--soft:rgba(138,160,124,.18);--shadow:0 18px 52px rgba(22,26,20,.08)}
-html[data-resolved="dark"]{color-scheme:dark;--bg:#090a09;--surface:#181b16;--surface2:#252920;--text:#edf0ea;--muted:#9aa194;--line:rgba(237,240,234,.11);--brand:#9aae8d;--brand2:#8aa07c;--soft:rgba(138,160,124,.2);--shadow:0 20px 60px rgba(0,0,0,.35)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{transition:.2s}.wrap{width:min(680px,100%);margin:auto;padding:18px 16px 36px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(150deg,var(--brand),var(--brand2));display:grid;place-items:center;box-shadow:0 8px 24px rgba(91,115,80,.24)}.logo svg{width:25px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.themes{display:flex;background:var(--surface2);padding:3px;border-radius:12px;gap:2px}.themes button{width:34px;height:32px;border:0;border-radius:9px;background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer}.themes button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.13)}.themes svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.card{background:var(--surface);border:1px solid var(--line);border-radius:25px;padding:13px;box-shadow:var(--shadow)}.drop{min-height:470px;border:1.7px dashed rgba(138,160,124,.65);border-radius:20px;display:grid;place-items:center;text-align:center;cursor:pointer;padding:30px;transition:.18s}.drop:hover,.drop.drag{background:var(--soft);border-color:var(--brand2)}.drop.busy{cursor:default}.center{display:grid;justify-items:center;gap:20px;width:100%;max-width:400px}.mainIcon{width:88px;height:88px;border-radius:29px;background:var(--soft);color:var(--brand2);display:grid;place-items:center;transition:.2s}.mainIcon svg{width:43px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}.drop:hover .mainIcon{transform:translateY(-3px) scale(1.025)}.pick{width:52px;height:52px;border:0;border-radius:17px;background:linear-gradient(#6a8360,#526a47);color:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:inset 0 1px rgba(255,255,255,.18),0 8px 20px rgba(82,106,71,.23)}.pick svg{width:23px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.status{display:none;width:100%}.status.show{display:block}.name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.percent{font-size:12px;color:var(--muted);margin-top:5px}.bar{height:8px;background:var(--surface2);border-radius:999px;overflow:hidden;margin-top:14px}.bar i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--brand2),var(--brand));transition:width .14s}.retry{display:none;width:46px;height:46px;border:1px solid var(--line);border-radius:15px;background:var(--surface2);color:var(--text);place-items:center;cursor:pointer}.retry.show{display:grid}.retry svg{width:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.overlay{position:fixed;inset:12px;z-index:30;display:grid;place-items:center;border:2px dashed var(--brand);border-radius:28px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);opacity:0;visibility:hidden;pointer-events:none;transition:.15s}.overlay svg{width:64px;fill:none;stroke:var(--brand2);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.dragging .overlay{opacity:1;visibility:visible}@media(max-width:560px){.drop{min-height:calc(100vh - 125px)}.wrap{padding-top:14px}}
+:root{color-scheme:light;--bg:#f5f5f7;--card:#fff;--soft:#e9eee6;--text:#151914;--muted:#7f877b;--brand:#657d59;--line:rgba(20,25,20,.1)}
+html.dark{color-scheme:dark;--bg:#090a09;--card:#181b16;--soft:#252a22;--text:#eef1eb;--muted:#929a8d;--brand:#9aae8d;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:18px}.app{width:min(620px,100%)}.top{display:flex;justify-content:flex-end;margin-bottom:12px}.themes{display:flex;background:var(--card);border:1px solid var(--line);padding:3px;border-radius:12px}.themes button{border:0;background:transparent;color:var(--muted);width:34px;height:30px;border-radius:9px;cursor:pointer}.themes button.on{background:var(--soft);color:var(--text)}.card{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:14px;box-shadow:0 20px 70px rgba(0,0,0,.09)}.drop{min-height:480px;border:1.7px dashed color-mix(in srgb,var(--brand) 68%,transparent);border-radius:22px;display:grid;place-items:center;text-align:center;cursor:pointer;transition:.18s;background:transparent}.drop:hover,.drop.drag{background:color-mix(in srgb,var(--soft) 75%,transparent)}.drop.busy{cursor:default}.inner{display:grid;justify-items:center;gap:18px}.icon{width:92px;height:92px;border-radius:30px;background:var(--soft);color:var(--brand);display:grid;place-items:center}.icon svg{width:46px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.name{max-width:440px;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bar{width:min(330px,70vw);height:8px;background:var(--soft);border-radius:999px;overflow:hidden;display:none}.bar.show{display:block}.bar i{display:block;width:0;height:100%;background:var(--brand);transition:width .15s}.percent{font-size:12px;color:var(--muted);min-height:16px}.retry{display:none;border:0;background:var(--soft);color:var(--text);width:46px;height:46px;border-radius:14px;cursor:pointer}.retry.show{display:grid;place-items:center}.retry svg{width:21px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}input{display:none}.overlay{position:fixed;inset:12px;border:2px dashed var(--brand);border-radius:28px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);opacity:0;visibility:hidden;pointer-events:none;transition:.15s;z-index:10}.dragging .overlay{opacity:1;visibility:visible}@media(max-width:600px){.drop{min-height:68vh}.icon{width:82px;height:82px}}
 </style>
 </head>
 <body>
-<div class="overlay"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4L8 7"/><path d="M5 14v5h14v-5"/></svg></div>
-<main class="wrap">
-<header class="top">
-<div class="logo" aria-label="Video a MP3"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="13" height="14" rx="2"/><path d="m16 10 5-3v10l-5-3M7 10h5M7 14h5"/></svg></div>
-<div class="themes" aria-label="Tema">
-<button data-theme="light" aria-label="Claro"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></svg></button>
-<button data-theme="dark" aria-label="Oscuro"><svg viewBox="0 0 24 24"><path d="M20 15.2A8 8 0 1 1 8.8 4 6.5 6.5 0 0 0 20 15.2Z"/></svg></button>
-<button data-theme="system" aria-label="Sistema"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></button>
-</div>
-</header>
+<div class="overlay"></div>
+<main class="app">
+<div class="top"><div class="themes"><button data-t="light" aria-label="Claro">☀</button><button data-t="dark" aria-label="Oscuro">☾</button><button data-t="system" aria-label="Sistema">◐</button></div></div>
 <section class="card">
-<div class="drop" id="drop" role="button" tabindex="0" aria-label="Seleccionar video">
-<div class="center">
-<div class="mainIcon" id="mainIcon"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4L8 7"/><path d="M5 14v5h14v-5"/><path d="M7 10 4 8v8l3-2m10-4 3-2v8l-3-2"/></svg></div>
-<button class="pick" id="pick" type="button" aria-label="Elegir video"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-<div class="status" id="status"><div class="name" id="name"></div><div class="percent" id="percent"></div><div class="bar"><i id="progress"></i></div></div>
-<button class="retry" id="retry" type="button" aria-label="Convertir otro"><svg viewBox="0 0 24 24"><path d="M20 6v5h-5"/><path d="M18.5 15a7 7 0 1 1-1.2-8.2L20 11"/></svg></button>
+<div id="drop" class="drop" tabindex="0" role="button">
+<div class="inner">
+<div class="icon" id="icon"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4L8 7"/><path d="M5 14v5h14v-5"/><path d="M7 10 4 8v8l3-2m10-4 3-2v8l-3-2"/></svg></div>
+<div class="name" id="name"></div>
+<div class="bar" id="bar"><i id="fill"></i></div>
+<div class="percent" id="percent"></div>
+<button class="retry" id="retry" aria-label="Intentar de nuevo"><svg viewBox="0 0 24 24"><path d="M20 6v6h-6"/><path d="M20 12a8 8 0 1 0 2 5.3"/></svg></button>
 </div>
 </div>
-<input id="file" type="file" accept="video/*,.mp4,.m4v,.mov,.avi,.mkv,.webm,.flv,.wmv,.mpeg,.mpg,.3gp,.3g2,.mts,.m2ts,.ts,.vob,.ogv,.divx,.asf,.rm,.rmvb" hidden>
+<input id="file" type="file" accept="video/*,.mp4,.m4v,.mov,.mkv,.webm,.avi,.flv,.wmv,.mpeg,.mpg,.3gp,.mts,.m2ts,.ts,.vob,.ogv,.divx,.rm,.rmvb">
 </section>
 </main>
-<script type="module">
-import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js';
-import { fetchFile, toBlobURL } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/esm/index.js';
-const $=s=>document.querySelector(s),file=$('#file'),drop=$('#drop'),pick=$('#pick'),status=$('#status'),nameEl=$('#name'),percent=$('#percent'),progress=$('#progress'),retry=$('#retry'),mainIcon=$('#mainIcon');
-let busy=false,ffmpeg=null;
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),drop=$('#drop'),input=$('#file'),nameEl=$('#name'),bar=$('#bar'),fill=$('#fill'),percent=$('#percent'),retry=$('#retry');
+let busy=false,ffmpeg=null,lastFile=null;
 const media=matchMedia('(prefers-color-scheme:dark)');
-function theme(t){localStorage.setItem('videoMp3Theme',t);document.documentElement.dataset.theme=t;document.documentElement.dataset.resolved=t==='system'?(media.matches?'dark':'light'):t;document.querySelectorAll('[data-theme]').forEach(b=>b.classList.toggle('on',b.dataset.theme===t))}
-theme(localStorage.getItem('videoMp3Theme')||'system');media.addEventListener('change',()=>{if(document.documentElement.dataset.theme==='system')theme('system')});document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=e=>{e.stopPropagation();theme(b.dataset.theme)});
-async function engine(){if(ffmpeg?.loaded)return;ffmpeg=new FFmpeg();ffmpeg.on('progress',({progress:p})=>{const n=Math.max(1,Math.min(99,Math.round((p||0)*100)));progress.style.width=n+'%';percent.textContent=n+'%'});const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';await ffmpeg.load({coreURL:await toBlobURL(base+'/ffmpeg-core.js','text/javascript'),wasmURL:await toBlobURL(base+'/ffmpeg-core.wasm','application/wasm')})}
-function reset(open=false){status.classList.remove('show');retry.classList.remove('show');pick.style.display='grid';progress.style.width='0';percent.textContent='';nameEl.textContent='';mainIcon.style.opacity='1';if(open)file.click()}
-async function convert(f){if(!f||busy)return;busy=true;drop.classList.add('busy');pick.style.display='none';retry.classList.remove('show');status.classList.add('show');mainIcon.style.opacity='.55';nameEl.textContent=f.name||'video';percent.textContent='0%';progress.style.width='2%';const rawExt=(f.name.split('.').pop()||'bin').toLowerCase().replace(/[^a-z0-9]/g,'')||'bin';const input='input.'+rawExt;const output='output.mp3';try{await engine();await ffmpeg.writeFile(input,await fetchFile(f));let code=await ffmpeg.exec(['-hide_banner','-i',input,'-map','0:a:0','-vn','-c:a','libmp3lame','-b:a','320k','-ar','48000','-id3v2_version','3',output]);if(code!==0)throw new Error('FFmpeg '+code);const data=await ffmpeg.readFile(output);const blob=new Blob([data.buffer],{type:'audio/mpeg'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(f.name.replace(/\.[^.]+$/,'')||'audio')+'.mp3';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);progress.style.width='100%';percent.textContent='100%';retry.classList.add('show')}catch(err){console.error(err);progress.style.width='0';percent.textContent='×';retry.classList.add('show')}finally{try{await ffmpeg?.deleteFile(input)}catch{}try{await ffmpeg?.deleteFile(output)}catch{}busy=false;drop.classList.remove('busy');file.value='';mainIcon.style.opacity='1'}}
-drop.onclick=()=>{if(!busy)file.click()};drop.onkeydown=e=>{if(!busy&&(e.key==='Enter'||e.key===' ')){e.preventDefault();file.click()}};pick.onclick=e=>{e.stopPropagation();if(!busy)file.click()};retry.onclick=e=>{e.stopPropagation();reset(true)};file.onchange=e=>convert(e.target.files?.[0]);['dragenter','dragover'].forEach(type=>window.addEventListener(type,e=>{e.preventDefault();if(!busy)document.body.classList.add('dragging')}));window.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dragging')});window.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');if(!busy)convert(e.dataTransfer.files?.[0])});
+function theme(t){localStorage.setItem('v2m-theme',t);document.documentElement.classList.toggle('dark',t==='dark'||(t==='system'&&media.matches));document.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
+theme(localStorage.getItem('v2m-theme')||'system');media.addEventListener('change',()=>theme(localStorage.getItem('v2m-theme')||'system'));document.querySelectorAll('[data-t]').forEach(b=>b.onclick=e=>{e.stopPropagation();theme(b.dataset.t)});
+function reset(){busy=false;drop.classList.remove('busy');nameEl.textContent='';bar.classList.remove('show');fill.style.width='0';percent.textContent='';retry.classList.remove('show');input.value=''}
+async function ensureFFmpeg(){
+ if(ffmpeg&&ffmpeg.isLoaded())return;
+ if(!window.FFmpeg)throw new Error('FFmpeg no cargó');
+ const {createFFmpeg}=FFmpeg;
+ ffmpeg=createFFmpeg({
+  log:true,
+  corePath:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+  progress:({ratio})=>{const p=Math.max(1,Math.min(99,Math.round((ratio||0)*100)));fill.style.width=p+'%';percent.textContent=p+'%'}
+ });
+ await ffmpeg.load();
+}
+async function convert(file){
+ if(!file||busy)return;
+ busy=true;lastFile=file;drop.classList.add('busy');nameEl.textContent=file.name;bar.classList.add('show');fill.style.width='2%';percent.textContent='2%';retry.classList.remove('show');
+ try{
+  await ensureFFmpeg();
+  const ext=(file.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').slice(0,8)||'bin';
+  const inputName='input.'+ext,outputName='output.mp3';
+  ffmpeg.FS('writeFile',inputName,await FFmpeg.fetchFile(file));
+  await ffmpeg.run('-i',inputName,'-map','0:a:0','-vn','-c:a','libmp3lame','-b:a','320k','-id3v2_version','3',outputName);
+  const data=ffmpeg.FS('readFile',outputName);
+  const blob=new Blob([data.buffer],{type:'audio/mpeg'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=file.name.replace(/\.[^.]+$/,'')+'.mp3';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+  try{ffmpeg.FS('unlink',inputName);ffmpeg.FS('unlink',outputName)}catch(_){ }
+  fill.style.width='100%';percent.textContent='100%';
+  setTimeout(reset,1200);
+ }catch(err){
+  console.error(err);fill.style.width='0';percent.textContent='×';retry.classList.add('show');busy=false;drop.classList.remove('busy');
+ }
+}
+drop.onclick=()=>{if(!busy)input.click()};drop.onkeydown=e=>{if(!busy&&(e.key==='Enter'||e.key===' ')){e.preventDefault();input.click()}};input.onchange=e=>convert(e.target.files[0]);retry.onclick=e=>{e.stopPropagation();if(lastFile)convert(lastFile)};
+['dragenter','dragover'].forEach(type=>window.addEventListener(type,e=>{e.preventDefault();if(!busy)document.body.classList.add('dragging')}));
+['dragleave','drop'].forEach(type=>window.addEventListener(type,e=>{e.preventDefault();if(type==='dragleave'&&e.relatedTarget)return;document.body.classList.remove('dragging')}));
+window.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)convert(f)});
 </script>
 </body>
 </html>
