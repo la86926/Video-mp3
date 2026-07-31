@@ -29,28 +29,29 @@ html.dark{color-scheme:dark;--bg:#090a09;--card:#181b16;--soft:#252a22;--text:#e
 <input id="file" type="file">
 </section>
 </main>
-<script src="./vendor/client.js?v=20260731-2"></script>
+<script src="./vendor/client.js?v=20260731-3"></script>
 <script>
 const $=s=>document.querySelector(s),drop=$('#drop'),input=$('#file'),nameEl=$('#name'),bar=$('#bar'),fill=$('#fill'),percent=$('#percent'),retry=$('#retry');
-let busy=false,ffmpeg=null,lastFile=null,coreURL='',wasmURL='';
+let busy=false,ffmpeg=null,lastFile=null,coreURL='',wasmURL='',stage='E0';
 const media=matchMedia('(prefers-color-scheme:dark)');
 function theme(t){localStorage.setItem('v2m-theme',t);document.documentElement.classList.toggle('dark',t==='dark'||(t==='system'&&media.matches));document.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
 theme(localStorage.getItem('v2m-theme')||'system');media.addEventListener('change',()=>theme(localStorage.getItem('v2m-theme')||'system'));document.querySelectorAll('[data-t]').forEach(b=>b.onclick=e=>{e.stopPropagation();theme(b.dataset.t)});
 function setProgress(value){const p=Math.max(0,Math.min(100,Math.round(value)));fill.style.width=p+'%';percent.textContent=p?p+'%':''}
 function reset(){busy=false;drop.classList.remove('busy');nameEl.textContent='';bar.classList.remove('show');setProgress(0);retry.classList.remove('show');input.value=''}
-async function blobURL(url,type){const response=await fetch(url,{cache:'force-cache'});if(!response.ok)throw new Error('HTTP '+response.status+' '+url);const data=await response.arrayBuffer();return URL.createObjectURL(new Blob([data],{type}))}
+async function blobURL(urls,type){let lastError;for(const url of urls){try{const response=await fetch(url,{cache:'force-cache'});if(!response.ok)throw new Error('HTTP '+response.status);const data=await response.arrayBuffer();return URL.createObjectURL(new Blob([data],{type}))}catch(error){lastError=error}}throw lastError||new Error('CDN no disponible')}
 async function ensureFFmpeg(){
  if(ffmpeg&&ffmpeg.loaded)return;
+ stage='E1';
  if(!window.LocalFFmpeg)throw new Error('Cliente FFmpeg no disponible');
- ffmpeg=new LocalFFmpeg('./vendor/814.ffmpeg.js?v=20260731-2');
+ ffmpeg=new LocalFFmpeg('./vendor/814.ffmpeg.js?v=20260731-3');
  ffmpeg.on('PROGRESS',({progress=0}={})=>setProgress(Math.max(8,Math.min(99,progress*100))));
  ffmpeg.on('LOG',({message}={})=>{if(message)console.log('[ffmpeg]',message)});
- const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
- setProgress(3);
- coreURL=await blobURL(base+'/ffmpeg-core.js','text/javascript');
- setProgress(5);
- wasmURL=await blobURL(base+'/ffmpeg-core.wasm','application/wasm');
- setProgress(8);
+ const bases=['https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd','https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd'];
+ stage='E2';setProgress(3);
+ coreURL=await blobURL(bases.map(base=>base+'/ffmpeg-core.js'),'text/javascript');
+ stage='E3';setProgress(5);
+ wasmURL=await blobURL(bases.map(base=>base+'/ffmpeg-core.wasm'),'application/wasm');
+ stage='E4';setProgress(8);
  await ffmpeg.load({coreURL,wasmURL});
 }
 async function safeDelete(path){try{await ffmpeg.deleteFile(path)}catch(_){}}
@@ -68,10 +69,11 @@ async function convert(file){
  const stamp=Date.now(),inputName='input-'+stamp+'.'+ext,outputName='output-'+stamp+'.mp3';
  try{
   await ensureFFmpeg();
-  setProgress(10);
+  stage='E5';setProgress(10);
   await ffmpeg.writeFile(inputName,new Uint8Array(await file.arrayBuffer()));
-  setProgress(12);
+  stage='E6';setProgress(12);
   await runMP3(inputName,outputName);
+  stage='E7';
   const data=await ffmpeg.readFile(outputName);
   const blob=new Blob([data.buffer],{type:'audio/mpeg'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -80,7 +82,7 @@ async function convert(file){
   setProgress(100);
   setTimeout(reset,1400);
  }catch(err){
-  console.error(err);fill.style.width='0';percent.textContent='×';retry.classList.add('show');busy=false;drop.classList.remove('busy');
+  console.error(err);fill.style.width='0';percent.textContent=stage;retry.classList.add('show');busy=false;drop.classList.remove('busy');
  }finally{
   if(ffmpeg){await safeDelete(inputName);await safeDelete(outputName)}
  }
