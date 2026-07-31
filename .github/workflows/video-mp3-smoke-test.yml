@@ -10,6 +10,9 @@ on:
 permissions:
   contents: write
 
+env:
+  TEST_REVISION: 2
+
 jobs:
   browser-test:
     runs-on: ubuntu-latest
@@ -39,7 +42,7 @@ jobs:
             const page = await context.newPage();
             page.on('console', msg => console.log('BROWSER:', msg.type(), msg.text()));
             page.on('pageerror', err => console.error('PAGE ERROR:', err));
-            await page.goto('http://127.0.0.1:4173/?test=1', { waitUntil: 'networkidle' });
+            await page.goto('http://127.0.0.1:4173/?test=2', { waitUntil: 'networkidle' });
             const downloadPromise = page.waitForEvent('download', { timeout: 240000 });
             await page.setInputFiles('#file', 'sample.webm');
             const download = await downloadPromise;
@@ -57,7 +60,7 @@ jobs:
         env:
           TEST_STATUS: ${{ job.status }}
         run: |
-          printf '{"status":"%s","commit":"%s","run_id":"%s"}\n' "$TEST_STATUS" "$GITHUB_SHA" "$GITHUB_RUN_ID" > test-status.json
+          printf '{"status":"%s","commit":"%s","run_id":"%s","revision":"%s"}\n' "$TEST_STATUS" "$GITHUB_SHA" "$GITHUB_RUN_ID" "$TEST_REVISION" > test-status.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add test-status.json
