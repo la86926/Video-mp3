@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f5f7">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>Video a MP3</title>
 <style>
 :root{color-scheme:light;--bg:#f5f5f7;--card:#fff;--soft:#e9eee6;--text:#151914;--muted:#7f877b;--brand:#657d59;--line:rgba(20,25,20,.1)}
@@ -16,56 +17,72 @@ html.dark{color-scheme:dark;--bg:#090a09;--card:#181b16;--soft:#252a22;--text:#e
 <main class="app">
 <div class="top"><div class="themes"><button data-t="light" aria-label="Claro">☀</button><button data-t="dark" aria-label="Oscuro">☾</button><button data-t="system" aria-label="Sistema">◐</button></div></div>
 <section class="card">
-<div id="drop" class="drop" tabindex="0" role="button">
+<div id="drop" class="drop" tabindex="0" role="button" aria-label="Seleccionar video">
 <div class="inner">
-<div class="icon" id="icon"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4L8 7"/><path d="M5 14v5h14v-5"/><path d="M7 10 4 8v8l3-2m10-4 3-2v8l-3-2"/></svg></div>
+<div class="icon"><svg viewBox="0 0 24 24"><path d="M12 3v12m0-12 4 4m-4-4L8 7"/><path d="M5 14v5h14v-5"/><path d="M7 10 4 8v8l3-2m10-4 3-2v8l-3-2"/></svg></div>
 <div class="name" id="name"></div>
 <div class="bar" id="bar"><i id="fill"></i></div>
 <div class="percent" id="percent"></div>
 <button class="retry" id="retry" aria-label="Intentar de nuevo"><svg viewBox="0 0 24 24"><path d="M20 6v6h-6"/><path d="M20 12a8 8 0 1 0 2 5.3"/></svg></button>
 </div>
 </div>
-<input id="file" type="file" accept="video/*,.mp4,.m4v,.mov,.mkv,.webm,.avi,.flv,.wmv,.mpeg,.mpg,.3gp,.mts,.m2ts,.ts,.vob,.ogv,.divx,.rm,.rmvb">
+<input id="file" type="file">
 </section>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
+<script src="./vendor/client.js?v=20260731-2"></script>
 <script>
 const $=s=>document.querySelector(s),drop=$('#drop'),input=$('#file'),nameEl=$('#name'),bar=$('#bar'),fill=$('#fill'),percent=$('#percent'),retry=$('#retry');
-let busy=false,ffmpeg=null,lastFile=null;
+let busy=false,ffmpeg=null,lastFile=null,coreURL='',wasmURL='';
 const media=matchMedia('(prefers-color-scheme:dark)');
 function theme(t){localStorage.setItem('v2m-theme',t);document.documentElement.classList.toggle('dark',t==='dark'||(t==='system'&&media.matches));document.querySelectorAll('[data-t]').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
 theme(localStorage.getItem('v2m-theme')||'system');media.addEventListener('change',()=>theme(localStorage.getItem('v2m-theme')||'system'));document.querySelectorAll('[data-t]').forEach(b=>b.onclick=e=>{e.stopPropagation();theme(b.dataset.t)});
-function reset(){busy=false;drop.classList.remove('busy');nameEl.textContent='';bar.classList.remove('show');fill.style.width='0';percent.textContent='';retry.classList.remove('show');input.value=''}
+function setProgress(value){const p=Math.max(0,Math.min(100,Math.round(value)));fill.style.width=p+'%';percent.textContent=p?p+'%':''}
+function reset(){busy=false;drop.classList.remove('busy');nameEl.textContent='';bar.classList.remove('show');setProgress(0);retry.classList.remove('show');input.value=''}
+async function blobURL(url,type){const response=await fetch(url,{cache:'force-cache'});if(!response.ok)throw new Error('HTTP '+response.status+' '+url);const data=await response.arrayBuffer();return URL.createObjectURL(new Blob([data],{type}))}
 async function ensureFFmpeg(){
- if(ffmpeg&&ffmpeg.isLoaded())return;
- if(!window.FFmpeg)throw new Error('FFmpeg no cargó');
- const {createFFmpeg}=FFmpeg;
- ffmpeg=createFFmpeg({
-  log:true,
-  corePath:'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
-  progress:({ratio})=>{const p=Math.max(1,Math.min(99,Math.round((ratio||0)*100)));fill.style.width=p+'%';percent.textContent=p+'%'}
- });
- await ffmpeg.load();
+ if(ffmpeg&&ffmpeg.loaded)return;
+ if(!window.LocalFFmpeg)throw new Error('Cliente FFmpeg no disponible');
+ ffmpeg=new LocalFFmpeg('./vendor/814.ffmpeg.js?v=20260731-2');
+ ffmpeg.on('PROGRESS',({progress=0}={})=>setProgress(Math.max(8,Math.min(99,progress*100))));
+ ffmpeg.on('LOG',({message}={})=>{if(message)console.log('[ffmpeg]',message)});
+ const base='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd';
+ setProgress(3);
+ coreURL=await blobURL(base+'/ffmpeg-core.js','text/javascript');
+ setProgress(5);
+ wasmURL=await blobURL(base+'/ffmpeg-core.wasm','application/wasm');
+ setProgress(8);
+ await ffmpeg.load({coreURL,wasmURL});
+}
+async function safeDelete(path){try{await ffmpeg.deleteFile(path)}catch(_){}}
+async function runMP3(inputName,outputName){
+ let code=await ffmpeg.exec(['-hide_banner','-i',inputName,'-map','0:a:0','-vn','-c:a','libmp3lame','-b:a','320k','-id3v2_version','3',outputName]);
+ if(code===0)return;
+ await safeDelete(outputName);
+ code=await ffmpeg.exec(['-hide_banner','-i',inputName,'-map','0:a:0','-vn','-ac','2','-c:a','libmp3lame','-b:a','320k','-id3v2_version','3',outputName]);
+ if(code!==0)throw new Error('FFmpeg terminó con código '+code);
 }
 async function convert(file){
  if(!file||busy)return;
- busy=true;lastFile=file;drop.classList.add('busy');nameEl.textContent=file.name;bar.classList.add('show');fill.style.width='2%';percent.textContent='2%';retry.classList.remove('show');
+ busy=true;lastFile=file;drop.classList.add('busy');nameEl.textContent=file.name;bar.classList.add('show');setProgress(1);retry.classList.remove('show');
+ const ext=(file.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').slice(0,12)||'bin';
+ const stamp=Date.now(),inputName='input-'+stamp+'.'+ext,outputName='output-'+stamp+'.mp3';
  try{
   await ensureFFmpeg();
-  const ext=(file.name.split('.').pop()||'bin').replace(/[^a-z0-9]/gi,'').slice(0,8)||'bin';
-  const inputName='input.'+ext,outputName='output.mp3';
-  ffmpeg.FS('writeFile',inputName,await FFmpeg.fetchFile(file));
-  await ffmpeg.run('-i',inputName,'-map','0:a:0','-vn','-c:a','libmp3lame','-b:a','320k','-id3v2_version','3',outputName);
-  const data=ffmpeg.FS('readFile',outputName);
+  setProgress(10);
+  await ffmpeg.writeFile(inputName,new Uint8Array(await file.arrayBuffer()));
+  setProgress(12);
+  await runMP3(inputName,outputName);
+  const data=await ffmpeg.readFile(outputName);
   const blob=new Blob([data.buffer],{type:'audio/mpeg'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');
-  a.href=url;a.download=file.name.replace(/\.[^.]+$/,'')+'.mp3';document.body.appendChild(a);a.click();a.remove();
+  a.href=url;a.download=(file.name.replace(/\.[^.]+$/,'')||'audio')+'.mp3';a.style.display='none';document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),60000);
-  try{ffmpeg.FS('unlink',inputName);ffmpeg.FS('unlink',outputName)}catch(_){ }
-  fill.style.width='100%';percent.textContent='100%';
-  setTimeout(reset,1200);
+  setProgress(100);
+  setTimeout(reset,1400);
  }catch(err){
   console.error(err);fill.style.width='0';percent.textContent='×';retry.classList.add('show');busy=false;drop.classList.remove('busy');
+ }finally{
+  if(ffmpeg){await safeDelete(inputName);await safeDelete(outputName)}
  }
 }
 drop.onclick=()=>{if(!busy)input.click()};drop.onkeydown=e=>{if(!busy&&(e.key==='Enter'||e.key===' ')){e.preventDefault();input.click()}};input.onchange=e=>convert(e.target.files[0]);retry.onclick=e=>{e.stopPropagation();if(lastFile)convert(lastFile)};
